@@ -1,0 +1,3 @@
+# Calculates corners and collisions 
+
+
