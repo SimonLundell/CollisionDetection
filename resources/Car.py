@@ -1,5 +1,5 @@
 import math
-from Point import Point
+from resources.Point import Point
 
 class Car:
     def __init__(self, point: Point):

@@ -1,9 +1,9 @@
 import math
 import matplotlib.pyplot as plt
 
-from Point import Point
-from Box import Box
-from Car import Car
+from resources.Point import Point
+from resources.Box import Box
+from resources.Car import Car
 
 def collision(ego_axle, targets) -> bool:
     for target in targets:
