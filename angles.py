@@ -1,10 +1,35 @@
 import math
 import matplotlib.pyplot as plt
 
+
 class Point:
     def __init__(self, x: float, y: float):
         self.x = x
         self.y = y
+
+class Box:
+    def __init__(self, bottom_left, bottom_right, top_left, top_right):
+        self.bl_x = bottom_left.x
+        self.bl_y = bottom_left.y
+        self.br_x = bottom_right.x
+        self.br_y = bottom_right.y
+        self.tl_x = top_left.x
+        self.tl_y = top_left.y
+        self.tr_x = top_right.x
+        self.tr_y = top_right.y
+    
+    def min_x(self):
+        return min(self.bl_x, self.br_x, self.tl_x, self.tr_x)
+
+    def max_x(self):
+        return max(self.bl_x, self.br_x, self.tl_x, self.tr_x)
+
+    def min_y(self):
+        return min(self.bl_y, self.br_y, self.tl_y, self.tr_y)
+
+    def max_y(self):
+        return max(self.bl_y, self.br_y, self.tl_y, self.tr_y)
+    
 
 class Car:
     def __init__(self, point: Point):
@@ -90,12 +115,19 @@ class Car:
 
         self.rotate(self.heading)
 
+def collision(ego_axle, targets) -> bool:
+    for target in targets:
+        if (ego_axle.x >= target.min_x() and ego_axle.x <= target.max_x() and ego_axle.y >= target.min_y() and ego_axle.y <= target.max_y()):
+            return True
+
+    return False
+
 if __name__=='__main__':
     i = 0
     heading = 0
 
-    start_point = Point(-10, -10)
-    c = Car(start_point)
+    c = Car(Point(-10,-10)) # Starting point
+    Boxes = []
 
     fig, ax = plt.subplots()
 
@@ -103,66 +135,46 @@ if __name__=='__main__':
     plt.axis([-100,100,-100,100])
     plt.xlim([-50,70])
     plt.ylim([-50,70])
-    #x positive, y positive
-    Box1 = [Point(10,10), Point(20,10), Point(20,0), Point(10,0)]
-    #x negative, y positive
-    Box2 = [Point(-10,60), Point(-20,60), Point(-20,40), Point(-10,40)]
-    #x positive, y negative 
-    Box3 = [Point(0,-5), Point(20,-5), Point(20,-30), Point(0,-30)]
-    #x negative, y negative
-    Box4 = [Point(-10,-10), Point(-30,-10), Point(-30,0), Point(-10,0)]
 
-    ax.plot([Box1[0].x, Box1[1].x, Box1[2].x, Box1[3].x], [Box1[0].y, Box1[1].y, Box1[2].y, Box1[3].y], 'ko', markersize=2)
-    ax.plot([Box2[0].x, Box2[1].x, Box2[2].x, Box2[3].x], [Box2[0].y, Box2[1].y, Box2[2].y, Box2[3].y], 'ko', markersize=2)
-    ax.plot([Box3[0].x, Box3[1].x, Box3[2].x, Box3[3].x], [Box3[0].y, Box3[1].y, Box3[2].y, Box3[3].y], 'ko', markersize=2)
-    ax.plot([Box4[0].x, Box4[1].x, Box4[2].x, Box4[3].x], [Box4[0].y, Box4[1].y, Box4[2].y, Box4[3].y], 'ko', markersize=2)
+    # Box(bl, br, tr, tl)
+    #x positive, y positive
+    Box1 = Box(Point(10,10), Point(20,10), Point(20,0), Point(10,0))
+    Boxes.append(Box1)
+    #x negative, y positive
+    Box2 = Box(Point(-20,60), Point(-10,60), Point(-10,40), Point(-20,40))
+    Boxes.append(Box2)
+    #x positive, y negative 
+    Box3 = Box(Point(0,-30), Point(20,-30), Point(20,-5), Point(0,-5))
+    Boxes.append(Box3)
+    #x negative, y negative
+    Box4 = Box(Point(-30,-10), Point(-10,-10), Point(-10,0), Point(-30,0))
+    Boxes.append(Box4)
+
+    for Box in Boxes:
+        ax.plot([Box.tl_x, Box.tr_x, Box.br_x, Box.bl_x], [Box.tl_y, Box.tr_y, Box.br_y, Box.bl_y], 'ko', markersize=2)
 
     while i <= 1000:
         if i % 1 == 0 and i != 0:
-            heading += 2
+            heading += 2 # Turning over time
         c.step(1,math.radians(heading))
 
         a1 = ax.plot(c.rear_axle.x, c.rear_axle.y, 'go', markersize=1)
-        if (c.front_left.x >= 0 and c.front_left.y >=0 and c.front_left.x >= 10 and c.front_left.x <= 20 and c.front_left.y >= 0 and c.front_left.y <= 10):
-            a2 = ax.plot(c.front_left.x, c.front_left.y, 'ro', markersize=2)
-        elif (c.front_left.x < 0 and c.front_left.y < 0 and c.front_left.x >= -30 and c.front_left.x <= -10 and c.front_left.y >= -10 and c.front_left.y <= 0):
-            a2 = ax.plot(c.front_left.x, c.front_left.y, 'ro', markersize=2)
-        elif (c.front_left.x < 0 and c.front_left.y > 0 and c.front_left.x >= -20 and c.front_left.x <= -10 and c.front_left.y >= 40 and c.front_left.y <= 60):
-            a2 = ax.plot(c.front_left.x, c.front_left.y, 'ro', markersize=2)
-        elif (c.front_left.x > 0 and c.front_left.y < 0 and c.front_left.x >= 0 and c.front_left.x <= 20 and c.front_left.y >= -30 and c.front_left.y <= -5):
+        if (collision(c.front_left, Boxes)):
             a2 = ax.plot(c.front_left.x, c.front_left.y, 'ro', markersize=2)
         else:
             a2 = ax.plot(c.front_left.x, c.front_left.y, 'bo', markersize=2)
 
-        if (c.front_right.x >= 0 and c.front_right.y >= 0 and c.front_right.x >= 10 and c.front_right.x <= 20 and c.front_right.y >= 0 and c.front_right.y <= 10):
-            a3 = ax.plot(c.front_right.x, c.front_right.y, 'ro', markersize=2)
-        elif (c.front_right.x < 0 and c.front_right.y < 0 and c.front_right.x >= -30 and c.front_right.x <= -10 and c.front_right.y >= -10 and c.front_right.y <= 0):
-            a3 = ax.plot(c.front_right.x, c.front_right.y, 'ro', markersize=2)
-        elif (c.front_right.x < 0 and c.front_right.y > 0 and c.front_right.x >= -20 and c.front_right.x <= -10 and c.front_right.y >= 40 and c.front_right.y <= 60):
-            a3 = ax.plot(c.front_right.x, c.front_right.y, 'ro', markersize=2)
-        elif (c.front_right.x > 0 and c.front_right.y < 0 and c.front_right.x >= 0 and c.front_right.x <= 20 and c.front_right.y >= -30 and c.front_right.y <= -5):
+        if (collision(c.front_right, Boxes)):
             a3 = ax.plot(c.front_right.x, c.front_right.y, 'ro', markersize=2)
         else:
             a3 = ax.plot(c.front_right.x, c.front_right.y, 'bo', markersize=2)
 
-        if (c.rear_right.x >= 0 and c.rear_right.y >= 0 and c.rear_right.x >= 10 and c.rear_right.x <= 20 and c.rear_right.y >= 0 and c.rear_right.y <= 10):
-            a4 = ax.plot(c.rear_right.x, c.rear_right.y, 'ro', markersize=2)
-        elif (c.rear_right.x < 0 and c.rear_right.y < 0 and c.rear_right.x >= -30 and c.rear_right.x <= -10 and c.rear_right.y >= -10 and c.rear_right.y <= 0):
-            a4 = ax.plot(c.rear_right.x, c.rear_right.y, 'ro', markersize=2)
-        elif (c.rear_right.x < 0 and c.rear_right.y > 0 and c.rear_right.x >= -20 and c.rear_right.x <= -10 and c.rear_right.y >= 40 and c.rear_right.y <= 60):
-            a4 = ax.plot(c.rear_right.x, c.rear_right.y, 'ro', markersize=2)
-        elif (c.rear_right.x > 0 and c.rear_right.y < 0 and c.rear_right.x >= 0 and c.rear_right.x <= 20 and c.rear_right.y >= -30 and c.rear_right.y <= -5):
+        if (collision(c.rear_right, Boxes)):
             a4 = ax.plot(c.rear_right.x, c.rear_right.y, 'ro', markersize=2)
         else:
             a4 = ax.plot(c.rear_right.x, c.rear_right.y, 'bo', markersize=2)
 
-        if (c.rear_left.x >= 0 and c.rear_left.y >= 0 and c.rear_left.x >= 10 and c.rear_left.x <= 20 and c.rear_left.y >= 0 and c.rear_left.y <= 10):
-            a5 = ax.plot(c.rear_left.x, c.rear_left.y, 'ro', markersize=2)
-        elif (c.rear_left.x < 0 and c.rear_left.y < 0 and c.rear_left.x >= -30 and c.rear_left.x <= -10 and c.rear_left.y >= -10 and c.rear_left.y <= 0):
-            a5 = ax.plot(c.rear_left.x, c.rear_left.y, 'ro', markersize=2)
-        elif (c.rear_left.x < 0 and c.rear_left.y > 0 and c.rear_left.x >= -20 and c.rear_left.x <= -10 and c.rear_left.y >= 40 and c.rear_left.y <= 60):
-            a5 = ax.plot(c.rear_left.x, c.rear_left.y, 'ro', markersize=2)
-        elif (c.rear_left.x > 0 and c.rear_left.y < 0 and c.rear_left.x >= 0 and c.rear_left.x <= 20 and c.rear_left.y >= -30 and c.rear_left.y <= -5):
+        if (collision(c.rear_left, Boxes)):
             a5 = ax.plot(c.rear_left.x, c.rear_left.y, 'ro', markersize=2)
         else:
             a5 = ax.plot(c.rear_left.x, c.rear_left.y, 'bo', markersize=2)
