@@ -18,14 +18,12 @@ if __name__=='__main__':
 
     c = Car(Point(-10,-10)) # Starting point
 
+    # Interactive plot, min 50 max 70
     fig, ax = plt.subplots()
-
     plt.ion()
-    plt.axis([-100,100,-100,100])
     plt.xlim([-50,70])
     plt.ylim([-50,70])
 
-    # Box(bl, br, tr, tl)
     #x positive, y positive
     Box1 = Box(Point(10,10), Point(20,10), Point(20,0), Point(10,0))
     #x negative, y positive
