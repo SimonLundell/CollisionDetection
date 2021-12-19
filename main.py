@@ -5,9 +5,9 @@ from resources.Point import Point
 from resources.Box import Box
 from resources.Car import Car
 
-def collision(ego_axle, targets) -> bool:
+def collision(ego_corner, targets) -> bool:
     for target in targets:
-        if (ego_axle.x >= target.min_x() and ego_axle.x <= target.max_x() and ego_axle.y >= target.min_y() and ego_axle.y <= target.max_y()):
+        if (ego_corner.x >= target.min_x() and ego_corner.x <= target.max_x() and ego_corner.y >= target.min_y() and ego_corner.y <= target.max_y()):
             return True
 
     return False
